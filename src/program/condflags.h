@@ -25,15 +25,27 @@
  *     Samuele Stronati - initial API and implementation
  *******************************************************************************/
 
-#ifndef UNTITLED_RUN_PROGRAM_H
-#define UNTITLED_RUN_PROGRAM_H
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#include <linux/limits.h>
-#include <sys/wait.h>
-#include "opcodes.h"
-#include "os.h"
+#ifndef UNTITLED_CONDFLAGS_H
+#define UNTITLED_CONDFLAGS_H
+#include "../vm/memory.h"
 
-int run();
+/**
+ * Condition flags stored in the R_COND register, which provide information
+ * about the most recently executed calculation. This allows programs to check
+ * logical conditions. Load instructions (LD, LDI, LDR, and LEA) and operate
+ * instructions (ADD, AND, and NOT) each load a result into one of the eight
+ * general purpose registers. The condition codes are set, based on whether
+ * that result, taken as a 16-bit 2’s complement integer, is negative
+ * (N = 1; Z, P = 0), zero (Z = 1; N, P = 0), or positive (P = 1; N, Z = 0).
+ * All other LC-3 instructions leave the condition codes unchanged
+ */
 
-#endif //UNTITLED_RUN_PROGRAM_H
+typedef enum condition_flags {
+    FL_POS = 1 << 0,    /* Posv */
+    FL_ZRO = 1 << 1,    /* Zero */
+    FL_NEG = 1 << 2,    /* Negv */
+} condition_flags_t;
+
+
+
+#endif //UNTITLED_CONDFLAGS_H

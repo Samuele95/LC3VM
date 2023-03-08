@@ -25,39 +25,33 @@
  *     Samuele Stronati - initial API and implementation
  *******************************************************************************/
 
-#ifndef UNTITLED_OS_H
-#define UNTITLED_OS_H
-#define SH_COMMAND "x-terminal-emulator -e ./run_program"
-#define INPUT_LENGTH 256
-#define PROGRAM_NAME_LENGTH 1024
-#include <semaphore.h>
-#include <ctype.h>
-#include <sys/mman.h>
-#include <fcntl.h>
-#include <sys/stat.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#include <stdatomic.h>
-#include <errno.h>
-#include "memory.h"
-#include "fsystem.h"
-#include "run_program.h"
-#include "ui.h"
+#ifndef UNTITLED_TRAP_H
+#define UNTITLED_TRAP_H
+#include <stdio.h>
+#include <stdlib.h>
+#include "../vm/memory.h"
 
-typedef struct system {
-    mem_t system_memory;
-    directory_t system_directory;
-    uint8_t pid_num;
-    uint8_t running;
-    atomic_int condvar;
-} system_t;
+typedef enum trapcodes {
+    TRAP_GETC = 0x20,  /* get character from keyboard, not echoed onto the terminal */
+    TRAP_OUT = 0x21,   /* output a character */
+    TRAP_PUTS = 0x22,  /* output a word string */
+    TRAP_IN = 0x23,    /* get character from keyboard, echoed onto the terminal */
+    TRAP_PUTSP = 0x24, /* output a byte string */
+    TRAP_HALT = 0x25   /* halt the program */
+} trapcodes_t;
 
-system_t* system_boot();
+int trap_getc(mem_t*);
 
-int system_shutdown(system_t* system);
+int trap_out(mem_t*);
 
-int mainProcedure();
+int trap_in(mem_t*);
 
-void launch_program(system_t*);
+int trap_puts(mem_t*);
 
-#endif //UNTITLED_OS_H
+int trap_putsp(mem_t*);
+
+int trap_halt(uint8_t*);
+
+#endif //UNTITLED_TRAP_H
+
+

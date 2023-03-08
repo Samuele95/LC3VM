@@ -25,33 +25,15 @@
  *     Samuele Stronati - initial API and implementation
  *******************************************************************************/
 
-#ifndef UNTITLED_TRAP_H
-#define UNTITLED_TRAP_H
-#include <stdio.h>
-#include <stdlib.h>
-#include "memory.h"
+#ifndef UNTITLED_RUN_PROGRAM_H
+#define UNTITLED_RUN_PROGRAM_H
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <linux/limits.h>
+#include <sys/wait.h>
+#include "opcodes.h"
+#include "../vm/os.h"
 
-typedef enum trapcodes {
-    TRAP_GETC = 0x20,  /* get character from keyboard, not echoed onto the terminal */
-    TRAP_OUT = 0x21,   /* output a character */
-    TRAP_PUTS = 0x22,  /* output a word string */
-    TRAP_IN = 0x23,    /* get character from keyboard, echoed onto the terminal */
-    TRAP_PUTSP = 0x24, /* output a byte string */
-    TRAP_HALT = 0x25   /* halt the program */
-} trapcodes_t;
+int run();
 
-int trap_getc(mem_t*);
-
-int trap_out(mem_t*);
-
-int trap_in(mem_t*);
-
-int trap_puts(mem_t*);
-
-int trap_putsp(mem_t*);
-
-int trap_halt(uint8_t*);
-
-#endif //UNTITLED_TRAP_H
-
-
+#endif //UNTITLED_RUN_PROGRAM_H

@@ -36,7 +36,7 @@
 #include <wait.h>
 #include <stdint.h>
 #include <byteswap.h>
-#include "condflags.h"
+#include "../program/condflags.h"
 
 /**
  * Registers mapped in the LC-3 ISA System. This enumeration is defined with constants

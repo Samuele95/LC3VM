@@ -13,9 +13,6 @@ associated to the macro.
 
 LC-3 programs must have been already compiled into object files.
 
-## Install - build
-CMake is used as a build system. The CMakelist.txt file has been given to compile the program.
-
 ## Brief description
 The main process of the program is a basic OS, which gives you an user interface with all the necessary information to
 use the program efficiently. At the start, some basic system details are given, as the location of the virtualized 

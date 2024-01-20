@@ -5,6 +5,7 @@
 ![Static Badge](https://img.shields.io/badge/https%3A%2F%2Fimg.shields.io%2Fbadge%2Fany_text-Bison-red?label=tool)
 ![Static Badge](https://img.shields.io/badge/Maintained%3F-yes-green.svg)
 ![Static Badge](https://img.shields.io/github/license/Samuele95/LC3VM.svg)
+![Static Badge](https://img.shields.io/github/issues-pr/Samuele95/LC3VM.svg)
 
 
 # LC3VM

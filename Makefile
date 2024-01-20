@@ -9,6 +9,7 @@ COMPDIR = src/compiler
 EDITORDIR = src/editor
 PROGDIR = src/runprogram
 GUIDIR = src/gui
+FILEXCG = src/clientserver
 BINARIESDIR = bin
 
 SHELL := /bin/bash
@@ -56,7 +57,7 @@ install_vm:
 	{ set -e ; echo "Creating the VM folder" ; if [ ! -d "~/LC3VM" ]; then mkdir LC3VM ; fi ; printf "The VM will be placed in %s/%s\n" $$(pwd) ${VMPATH} ; }
 	
 install_file_sender:
-	{ set -e ; cp ./${RESOURCESPATH}/filesender.sh ./${VMPATH}/filesender.sh ;echo "File sender successfully installed!" ; }
+	{ set -e ; cp ./${FILEXCG}/filesender.sh ./${VMPATH}/filesender.sh ;echo "File sender successfully installed!" ; }
 
 move_obj_files:
 	{ set -e ; mkdir ${OBJPATH} ; for f in *.o; do mv $$f ${OBJPATH} ; done ; mv $(exec_files) LC3VM; }

@@ -18,4 +18,5 @@ Please refer to [wiki](https://github.com/Samuele95/LC3VM/wiki) for docs and ins
 ## Credits
 The following projects have been embedded to this application, in order to use their functionalities:
 - [gtk-notepad](https://github.com/JadedTuna/gtk-notepad.git) by [JadedTuna](https://github.com/JadedTuna), as an embedded text editor in the GUI version of the program;
-- [texor](https://github.com/kyletolle/texor.git) by [kyletolle](https://github.com/kyletolle) , as an embedded terminal text editor. 
+- [texor](https://github.com/kyletolle/texor.git) by [kyletolle](https://github.com/kyletolle) , as an embedded terminal text editor,
+- GNOME's [vte](https://github.com/GNOME/vte.git), Virtual TErminal embedded in GTK application.

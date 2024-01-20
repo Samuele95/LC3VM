@@ -14,3 +14,8 @@ The program is divided into two main components: a OS-like process and a program
 
 ## Docs
 Please refer to [wiki](https://github.com/Samuele95/LC3VM/wiki) for docs and instructions.
+
+## Credits
+The following projects have been embedded to this application, in order to use their functionalities:
+- [gtk-notepad](https://github.com/JadedTuna/gtk-notepad.git) by [JadedTuna](https://github.com/JadedTuna), as an embedded text editor in the GUI version of the program;
+- [texor](https://github.com/kyletolle/texor.git) by [kyletolle](https://github.com/kyletolle) , as an embedded terminal text editor. 

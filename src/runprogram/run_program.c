@@ -51,7 +51,13 @@ static int shsid;
 static system_t* shsystem;
 static sem_t* semaphore;
 
-int main() {
+int main(int argc, char* argv[]) {
+    if (argc > 2) {
+        fprintf(stdout, "Usage...\n");
+        return EXIT_SUCCESS;
+    }
+    if (argc == 2)
+        strcpy(path, argv[1]);
     fprintf(stdout,"Waiting to acquire lock on system memory...\n");
     semaphore = sem_open("SEM", O_CREAT, 0666, 0);
     if (run() != 0) {
@@ -156,10 +162,12 @@ int get_system_memory() {
 }
 
 char* get_program() {
-    FILE* npipe = fopen("lc3pipe", "r");
-    strtok(fgets(path, PATH_MAX, npipe), "\n");
-    fclose(npipe);
-    unlink("lc3pipe");
+    if ((path == NULL) || (strlen(path) == 0)) {
+    	FILE* npipe = fopen("lc3pipe", "r");
+    	strtok(fgets(path, PATH_MAX, npipe), "\n");
+    	fclose(npipe);
+    	unlink("lc3pipe");
+    }
     return path;
 }
 

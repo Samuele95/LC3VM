@@ -27,7 +27,7 @@
 
 #ifndef OS_H
 #define OS_H
-#define SH_COMMAND "x-terminal-emulator -e ./run_program"
+#define SH_COMMAND "x-terminal-emulator -e ./run_program "
 #define EDITOR_COMMAND "./texor"
 #define INPUT_LENGTH 256
 #define PROGRAM_NAME_LENGTH 1024

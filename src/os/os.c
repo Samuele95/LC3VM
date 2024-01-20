@@ -39,15 +39,23 @@
 #include <sys/mman.h>
 #include <wait.h>
 #include <sys/utsname.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <net/if.h>
+#include <ifaddrs.h>
+#include <errno.h>
 
 
 static system_t* system_init(system_t*);
 static directory_t* system_volume_init(system_t*);
-directory_t* update_volume(system_t*);
+static directory_t* update_volume(system_t*);
 static mem_t* system_memory_init(system_t*);
 static long check_user_input(char* input);
 static void system_fork(system_t* systemt, char* program);
 static char* choose_program();
+static void print_ip_addresses();
 static int sum(const char*, const struct stat*, int);
 static int shsid;
 static int status;
@@ -56,15 +64,23 @@ static char program[PROGRAM_NAME_LENGTH];
 static char drive_content[BUFSIZ];
 
 
-int main() {
-
+int main(int argc, char* argv[]) {
+    if ((argc != 2) || ((strcmp(argv[1], "cline") != 0)  && ((strcmp(argv[1], "gui") != 0)))) {
+        fprintf(stdout, "Usage...\n");
+        return EXIT_SUCCESS;
+    }
     sem_t* semaphore;
     semaphore = sem_open("SEM", O_CREAT, 0666, 0);
     lc3_system = system_boot();
     atomic_init(&lc3_system->condvar, 0);
-    mainmenu();
+    
+    if ((strcmp(argv[1], "gui") == 0))
+        system("./gui");
+    else {
+    	mainmenu();
+    	mainProcedure();
+    }
 
-    mainProcedure();
     sem_close(semaphore);
     return system_shutdown(lc3_system);
 
@@ -73,28 +89,8 @@ int main() {
 void launch_editor() {
     int status;
     char launch_command[BUFSIZ];
-    /*
-    pid_t pid = fork();
-    if (pid < 0) {
-        fprintf(stderr, "failed process generation\n");
-        exit(1);
-    }
-
-    else if (pid == 0) {
-        strcpy(launch_command, EDITOR_COMMAND);
-        //strcat(launch_command, " ");
-        //strcat(launch_command, "/utils/prova.lc3");
-        if (!execl("/bin/sh", "sh", "-c", launch_command))
-            perror("Error in launching text editor!");
-    }
-
-    else {
-        wait(&status);
-        mainProcedure();
-    }
-     */
+    
     strcpy(launch_command, "clear ; ./texor ");
-    //strcat(launch_command, lc3_system->system_directory.volume_path);
     if (choose_program() != NULL)
         strcat(strcat(launch_command, lc3_system->system_directory.volume_path), program);
     system(launch_command);
@@ -105,24 +101,49 @@ void launch_editor() {
 }
 
 void launch_program(system_t* systemt) {
-/*
-    char pro[PROGRAM_NAME_LENGTH];
-    char userinput[INPUT_LENGTH];
-    long programindex = -1;
-    fprintf(stdout, "Select a program you want to execute among the following (write the index number):\n"
-                    "%s\nChoose the program by typing its index, or press any other key to return to main menu: ",
-                    print_drive_content(lc3_system));
-    if ((fscanf(stdin, " %s", userinput) == 0) || ((programindex = check_user_input(userinput)) == -1))
-        return;
+    if (choose_program() == NULL) return;
     fflush(stdin);
     fflush(stdout);
-    system_fork(systemt, strcpy(pro,lc3_system->system_directory.dentry_list[programindex].dentry.d_name));
- */
-    if (choose_program() == NULL) return;
     system_fork(systemt, program);
 }
 
+
+void send_file_cline() {
+    char* hostaddr;
+    char cmd[BUFSIZ];
+    hostaddr = (char*) malloc(sizeof(char) * BUFSIZ);
+    print_ip_addresses();
+    fprintf(stdout, "Please, insert the address of the receiving machine: ");
+    fscanf(stdin, "%s", hostaddr);
+    if (choose_program() == NULL) return;
+    strcpy(cmd, "bash ./filesender.sh send ");
+    strcat(cmd, program);
+    system(cmd);
+    free(hostaddr);
+}
+
+void receive_file_cline(system_t* systemt) {
+    char* hostaddr;
+    char cmd[BUFSIZ];
+    print_ip_addresses();
+    hostaddr = (char*) malloc(sizeof(char) * BUFSIZ);
+    fprintf(stdout, "Please, insert the name of the file you want to receive: ");
+    fscanf(stdin, "%s", hostaddr);
+    
+    strcpy(cmd, "bash ./filesender.sh receive ");
+    strcat(cmd, RELATIVE_VOL_PATH);
+    strcat(cmd, hostaddr);
+    system(cmd);
+    fflush(stdin);
+    fflush(stdout);
+    free(hostaddr);
+}
+
 void system_fork(system_t* systemt, char* program) {
+    char prog[PATH_MAX];
+    char cmd[8192];
+    char *argv[8] = {"/bin/sh", "-c", cmd, NULL};
+    
     pid_t pid = vfork();
     if (pid < 0) {
         fprintf(stderr, "failed process generation\n");
@@ -130,22 +151,19 @@ void system_fork(system_t* systemt, char* program) {
     }
 
     else if (pid == 0) {
-        if (!execl("/bin/sh", "sh", "-c", SH_COMMAND))
+        fflush(stdin);
+        fflush(stdout);
+    	strcpy(prog, systemt->system_directory.volume_path);
+    	strcat(prog, program);
+    	strcpy(cmd, SH_COMMAND);
+    	strcat(cmd, prog);
+        if (!execvp(argv[0], argv))
+        //if (!execl("/bin/sh", "sh", "-c", cmd))
             perror("Error in launching program!");
     }
 
     else {
         systemt->pid_num++;
-        FILE* npipe;
-        if (!(mkfifo("lc3pipe",0777))) {
-            perror("Warning in opening pipe");
-        }
-        if ((npipe= fopen("lc3pipe", "w+")) == NULL){
-            printf("Something went wrong!\n");
-            return;
-        }
-        fprintf(npipe, "%s%s\n", systemt->system_directory.volume_path, program);
-        fflush(npipe);
         fflush(stdin);
         fflush(stdout);
         mainProcedure();
@@ -167,34 +185,34 @@ int mainProcedure() {
     char command;
     while (lc3_system->running) {
         fprintf(stdout,"Choose among the followings:\n\n""1) Write and compile an LC3 program\n2) Launch a new program\n""3) Read machine status\n"
-                       "4) About\n""5) Shutdown\n\n""Insert a number please: ");
+                       "4) About\n""5) Send a file to another VM\n6) Receive a file\n7) Shutdown\n\n""Insert a number please: ");
         fscanf(stdin, " %c", &command);
-        if (command == '1')
+        if (command == '1') {
+            update_volume(lc3_system);
             launch_editor();
-        if (command == '2')
+        }
+        if (command == '2') {
+            update_volume(lc3_system);
             launch_program(lc3_system);
+        }
         if (command == '3') {
             update_volume(lc3_system); 
             get_system_info(lc3_system);  
         }
         if (command == '4')
             about();
-        if (command == '5')
-            return lc3_system->running = 0;
-        /*
-        switch (command) {
-            case '1' : launch_editor();
-            case '2' : launch_program(lc3_system);
-            case '3' : update_volume(lc3_system); 
-                       get_system_info(lc3_system);
-            case '4' : about();
-            case '5' : return lc3_system->running = 0;
-            default  : break;
+        if (command == '5') {
+            update_volume(lc3_system);
+            send_file_cline();
         }
-        command = 0;
+        if (command == '6') {
+            update_volume(lc3_system);
+            receive_file_cline(lc3_system);
+        }
+        if (command == '7')
+            return lc3_system->running = 0;
         fflush(stdin);
         fflush(stdout);
-        */
     }
     return EXIT_FAILURE;
 }
@@ -271,6 +289,8 @@ void get_system_info(system_t* system) {
     printf("\nMEMORY INFO:\nRAM size: %.1f GB\nCPU registers: %d\n", get_memory_size(system), get_cpuregisters_num(system));
     printf("\nPROCESSES INFO:\nExecuted processes: %d\n", get_processes_num(system));
     get_host_info();
+    printf("\nIP ADDRESSES\n");
+    print_ip_addresses();
     printf("\n/****************************************************"
            "***********************************************/\n\n\n");
 }
@@ -301,6 +321,58 @@ int get_host_info() {
     printf("Version: %s\n", uname_dt.version);
     printf("CPU Architecture: %s\n", uname_dt.machine);
     return EXIT_SUCCESS;
+}
+
+void print_ip_addresses() {
+    struct ifaddrs *myaddrs, *ifa;
+    void *in_addr;
+    char buf[64];
+
+    if(getifaddrs(&myaddrs) != 0)
+    {
+        perror("getifaddrs");
+        exit(1);
+    }
+    
+    fprintf(stdout, "List of local IPv4 and IPv6 addresses\n");
+    for (ifa = myaddrs; ifa != NULL; ifa = ifa->ifa_next)
+    {
+        if (ifa->ifa_addr == NULL)
+            continue;
+        if (!(ifa->ifa_flags & IFF_UP))
+            continue;
+
+        switch (ifa->ifa_addr->sa_family)
+        {
+            case AF_INET:
+            {
+                struct sockaddr_in *s4 = (struct sockaddr_in *)ifa->ifa_addr;
+                in_addr = &s4->sin_addr;
+                break;
+            }
+
+            case AF_INET6:
+            {
+                struct sockaddr_in6 *s6 = (struct sockaddr_in6 *)ifa->ifa_addr;
+                in_addr = &s6->sin6_addr;
+                break;
+            }
+
+            default:
+                continue;
+        }
+
+        if (!inet_ntop(ifa->ifa_addr->sa_family, in_addr, buf, sizeof(buf)))
+        {
+            printf("%s: inet_ntop failed!\n", ifa->ifa_name);
+        }
+        else
+        {
+            printf("%s: %s\n", ifa->ifa_name, buf);
+        }
+    }
+
+    freeifaddrs(myaddrs);
 }
 
 char* print_drive_content(system_t* system) {

@@ -117,7 +117,7 @@ int set_drive_volume(directory_t* directory) {
         perror("A directory has not been defined yet!");
         return EXIT_FAILURE;
     }
-    strcat(strcpy(directory->volume_path, get_working_dir(directory)), "/utils/");
+    strcat(strcpy(directory->volume_path, get_working_dir(directory)), RELATIVE_VOL_PATH);
     return EXIT_SUCCESS;
 }
 

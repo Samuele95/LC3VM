@@ -29,6 +29,7 @@
 #define FSYSTEM_H
 #define MAX_FILE_LIM 100
 #define EXT_SIZE 5
+#define RELATIVE_VOL_PATH "/utils/"
 #include <dirent.h>
 
 

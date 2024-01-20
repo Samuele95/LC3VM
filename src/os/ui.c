@@ -43,7 +43,7 @@ void mainmenu() {
                     "|__________________________________________________________|\t\n\n\n"
                     "Welcome to the LC-3 Virtual Machine!\n\n"
                     "This process emulates an LC-3 ISA Architecture, and it can \n"
-                    "be used to effectively launch any program written using the \n"
+                    "be used to write and launch programs written using the \n"
                     "LC-3 Assembly language.\n");
 }
 
